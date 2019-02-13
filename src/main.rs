@@ -14,7 +14,6 @@ use graphics::*;
 const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
-//#[derive(Clone)]
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
     rotation: f64,  // Rotation for the square.
@@ -27,7 +26,10 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         let rotation = self.rotation;
         let (x, y) = (args.width / 2.0, args.height / 2.0);
-        let line_width = 200_f64;
+        let pitch = 200_f64;
+        let pos_x = 0_u32;
+        let pos_y = 0_u32;
+        let pos_rotate = 0_u32;
         let wave = self.wave;
         let pi = self.pi;
 
@@ -42,13 +44,34 @@ impl App {
                 .rot_rad(rotation)
                 .trans(-line_width / 2.0, 0.0);
 
-            App::vibrating_line(&c, gl, transform, wave, pi, line_width);
-            App::vibrating_line(&c, gl, transform, wave, pi, line_width/2.0);
+            Virtualization::vibrating_line(&c, gl, transform, wave, pi, pitch, pos_x, pos_y, pos_rotate);
 
         });
     }
+    
+    fn open_sound(){
+        
+    }   
+    
 
-    fn vibrating_line(c: &graphics::Context, gl: &mut GlGraphics, transform: [[f64; 3];2], wave: f64, pi: f64, line_width: f64) {
+    fn update(&mut self, args: &UpdateArgs) {
+        self.rotation += 0.1 * args.dt;
+        self.t += 0.3 * self.pi;
+        if self.t > 2.0 * self.pi {
+            self.t = self.t % (self.pi * 2.0);
+        }
+        self.wave = self.t.sin() * 10.0;
+        //println!("{}", self.wave.to_string());
+    }
+}
+
+pub struct Virtualization {
+
+}
+
+impl Virtualization {
+
+    fn vibrating_line(c: &graphics::Context, gl: &mut GlGraphics, transform: [[f64; 3];2], wave: f64, pi: f64, pitch: f64, x: u32, y: u32, rotate: u32) {
 
         let testline = Line::new(BLACK, 2.0);
         //// Draw a box rotating around the middle of the screen.
@@ -70,9 +93,9 @@ impl App {
         for item in 0..length {
             if item < length - 1 {
                 hline = [
-                    (line_width / ((length as f64) - 1.0)) * seg[item],
+                    (pitch / ((length as f64) - 1.0)) * seg[item],
                     wave * amp[item].abs(),
-                    (line_width / ((length as f64) - 1.0)) * seg[item + 1],
+                    (pitch / ((length as f64) - 1.0)) * seg[item + 1],
                     wave * amp[item + 1].abs(),
                 ];
                 testline.draw(hline, &c.draw_state, transform, gl);
@@ -80,17 +103,8 @@ impl App {
         }
     }
 
-
-    fn update(&mut self, args: &UpdateArgs) {
-        self.rotation += 0.1 * args.dt;
-        self.t += 0.3 * self.pi;
-        if self.t > 2.0 * self.pi {
-            self.t = self.t % (self.pi * 2.0);
-        }
-        self.wave = self.t.sin() * 10.0;
-        //println!("{}", self.wave.to_string());
-    }
 }
+
 
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
