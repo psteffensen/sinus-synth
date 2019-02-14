@@ -10,6 +10,8 @@ use piston::event_loop::*;
 use piston::input::*;
 use piston::window::WindowSettings;
 use graphics::*;
+use std::fs::File;  // for opening and saving file
+use std::io::prelude::*; // for opening and saving file 
 
 const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
@@ -20,6 +22,7 @@ pub struct App {
     wave: f64,
     t: f64,
     pi: f64,
+    sound: [[f64; 4];64]
 }
 
 impl App {
@@ -32,6 +35,8 @@ impl App {
         let pos_rotate = 0_u32;
         let wave = self.wave;
         let pi = self.pi;
+        let line_width = 200_f64;
+        let sound = self.sound;
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
@@ -45,14 +50,30 @@ impl App {
                 .trans(-line_width / 2.0, 0.0);
 
             Virtualization::vibrating_line(&c, gl, transform, wave, pi, pitch, pos_x, pos_y, pos_rotate);
-
+            let file_name = "sound.sin";
+            App::open_sound("sound_test.sin");
+            App::save_sound(file_name);
         });
     }
     
-    fn open_sound(){
-        
+    fn open_sound(file_name: &str) -> sound { 
+        let mut file = File::open(file_name)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        for line in contests.split("\n") {
+            println!(line.to_string());
+        }
+        Ok(())
     }   
     
+    fn save_sound(&self, file_name: &str) -> std::io::Result<()> {
+        let mut file = File::create(file_name)?;
+        file.write_all(b"#Settings for sound\n")?;
+        for tone in self.sound {
+            file.write_all(b"pitch: {}, x: {}, y: {}, rotate: {}", tone.pitch, tone.x, tone.y, tone.rotate)?;
+        }
+        Ok(())
+    }
 
     fn update(&mut self, args: &UpdateArgs) {
         self.rotation += 0.1 * args.dt;
