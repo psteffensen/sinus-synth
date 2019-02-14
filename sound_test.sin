@@ -1,0 +1,5 @@
+#Settings for sound
+pitch: c2, x: 0, y: 0, rotate: 0
+pitch: g2, x: 100, y: 0, rotate: 45
+pitch: c3, x: 0, y: -100, rotate: 90
+freq: 512, x: -100, y: -100, rotate: 135
