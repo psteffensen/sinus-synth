@@ -22,7 +22,7 @@ pub struct App {
     wave: f64,
     t: f64,
     pi: f64,
-    sound: [[f64; 4];64]
+    sound: [[f64; 4];64],
 }
 
 impl App {
@@ -36,8 +36,13 @@ impl App {
         let wave = self.wave;
         let pi = self.pi;
         let line_width = 200_f64;
-        let sound = self.sound;
+        //let contents = self.contents;
+        //let contents = std::io::Result<String>;
 
+        let file_name = "sound.sin";
+        let contents = App::open_sound("sound_test.sin");
+        //App::save_sound(file_name);
+ 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
             clear(WHITE, gl);
@@ -50,28 +55,37 @@ impl App {
                 .trans(-line_width / 2.0, 0.0);
 
             Virtualization::vibrating_line(&c, gl, transform, wave, pi, pitch, pos_x, pos_y, pos_rotate);
-            let file_name = "sound.sin";
-            App::open_sound("sound_test.sin");
-            App::save_sound(file_name);
-        });
+       });
     }
     
-    fn open_sound(file_name: &str) -> sound { 
+    fn open_sound(file_name: &str) -> std::io::Result<(String)> { 
         let mut file = File::open(file_name)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        for line in contests.split("\n") {
-            println!(line.to_string());
+        for line in contents.split("\r\n") {
+            if line.starts_with('#')
+            {
+                
+            }
+            else 
+            {
+                match line.starts_with("Tone") {
+                    "Tone:" => {},
+                    
+
+                }
+                println!("{:}", line.to_string());
+            }
         }
-        Ok(())
+        Ok(contents)
     }   
     
     fn save_sound(&self, file_name: &str) -> std::io::Result<()> {
         let mut file = File::create(file_name)?;
         file.write_all(b"#Settings for sound\n")?;
-        for tone in self.sound {
+        /*for tone in self.sound {
             file.write_all(b"pitch: {}, x: {}, y: {}, rotate: {}", tone.pitch, tone.x, tone.y, tone.rotate)?;
-        }
+        }*/
         Ok(())
     }
 
@@ -146,6 +160,8 @@ fn main() {
         wave: 0.0,
         t: 0.0,
         pi: std::f64::consts::PI,
+        sound: [[0.0; 4];64],
+        //contents: std::io::Result<()>
     };
 
     let mut events = Events::new(EventSettings::new());
