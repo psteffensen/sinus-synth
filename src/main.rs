@@ -57,11 +57,17 @@ impl App {
             Virtualization::vibrating_line(&c, gl, transform, wave, pi, pitch, pos_x, pos_y, pos_rotate);
        });
     }
-    
+
     fn open_sound(file_name: &str) -> std::io::Result<(String)> { 
         let mut file = File::open(file_name)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
+        let mut tone: [[f64; 5]; 128];
+        let mut adsr: [[f64; 4]; 1];
+        let mut lfo: [f64; 2];
+        let mut seq: [[f64; 2]; 2048];
+
+
         for line in contents.split("\r\n") {
             if line.starts_with('#')
             {
@@ -69,12 +75,18 @@ impl App {
             }
             else 
             {
-                match line.starts_with("Tone") {
-                    "Tone:" => {},
-                    
-
-                }
-                println!("{:}", line.to_string());
+                let params: Vec<&str> = line.split(',').collect();
+                let param: Vec<&str> = params[0].split(':').collect();
+                println!("{:?}", param);/*
+                match param[0].as_ref() {
+                    "tone" => { tone[0] = param[1];
+                                tone[1] = param[3];
+                                tone[2] = param[5];
+                                tone[3] = param[7];
+                                tone[4] = param[9];
+                              },
+                    _ => {println!("{}","Empty")}
+                }*/
             }
         }
         Ok(contents)
@@ -168,7 +180,7 @@ fn main() {
     while let Some(e) = events.next(&mut window) {
         if let Some(r) = e.render_args() {
             app.render(&r);
-            //std::thread::sleep(std::time::Duration::from_millis(10));
+            std::thread::sleep(std::time::Duration::from_millis(2000));
         }
 
         if let Some(u) = e.update_args() {
