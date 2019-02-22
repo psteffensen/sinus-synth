@@ -77,7 +77,7 @@ impl App {
             {
                 let params: Vec<&str> = line.split(',').collect();
                 for param in params {
-                    let param_split: Vec<&str> = param.split(':').collect();
+                    let param_split: Vec<&str> = param[].split(':').collect();
                     match param_split[0].as_ref() {
                         "tone" => { tone[0][0] = param_split[1].trim().parse::<f64>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
                                     tone[0][1] = param_split[3].trim().parse::<f64>().unwrap(); // amp
