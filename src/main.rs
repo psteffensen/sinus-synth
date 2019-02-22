@@ -62,7 +62,7 @@ impl App {
         let mut file = File::open(file_name)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        let mut tone: [[f64; 5]; 128];
+        let mut tone: [[f64; 6]; 128] = [[0.0; 6]; 128];
         let mut adsr: [[f64; 4]; 1];
         let mut lfo: [f64; 2];
         let mut seq: [[f64; 2]; 2048];
@@ -76,17 +76,20 @@ impl App {
             else 
             {
                 let params: Vec<&str> = line.split(',').collect();
-                let param: Vec<&str> = params[0].split(':').collect();
-                println!("{:?}", param);/*
-                match param[0].as_ref() {
-                    "tone" => { tone[0] = param[1];
-                                tone[1] = param[3];
-                                tone[2] = param[5];
-                                tone[3] = param[7];
-                                tone[4] = param[9];
-                              },
-                    _ => {println!("{}","Empty")}
-                }*/
+                for param in params {
+                    let param_split: Vec<&str> = param.split(':').collect();
+                    match param_split[0].as_ref() {
+                        "tone" => { tone[0][0] = param_split[1].trim().parse::<f64>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
+                                    tone[0][1] = param_split[3].trim().parse::<f64>().unwrap(); // amp
+                                    tone[0][2] = param_split[5].trim().parse::<f64>().unwrap(); // freq
+                                    tone[0][3] = param_split[7].trim().parse::<f64>().unwrap(); // x
+                                    tone[0][4] = param_split[9].trim().parse::<f64>().unwrap(); // y
+                                    tone[0][5] = param_split[11].trim().parse::<f64>().unwrap(); // rotate
+                                    println!("{:?}", tone[0]);
+                                    },
+                        _ => { println!("{}","Empty") }
+                    }
+                }
             }
         }
         Ok(contents)

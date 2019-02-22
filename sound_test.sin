@@ -1,9 +1,9 @@
 # Settings for sound
-tone: 0, pitch: c2, x: 0, y: 0, rotate: 0
-tone: 1, pitch: g2, x: 100, y: 0, rotate: 45
-tone: 2, pitch: c3, x: 0, y: -100, rotate: 90
-tone: 3, freq: 512, x: -100, y: -100, rotate: 135
-#tone: 4, freq: 512, x: -100, y: -100, rotate: 135+A
+tone: 0, amp: 127, pitch: c2, x: 0, y: 0, rotate: 0
+tone: 1, amp: 127, pitch: g2, x: 100, y: 0, rotate: 45
+tone: 2, amp: 127, pitch: c3, x: 0, y: -100, rotate: 90
+tone: 3, amp: 127, freq: 512, x: -100, y: -100, rotate: 135
+#tone: 4, amp: 127, freq: 512, x: -100, y: -100, rotate: 135+A
 
 # ADSR
 #adsr, Attack: 0, Delay: 10, Sustain: 50, Release: 100
