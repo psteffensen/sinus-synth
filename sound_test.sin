@@ -1,9 +1,9 @@
 # Settings for sound
-tone: 0, amp: 127, pitch: c2, x: 0, y: 0, rotate: 0
-tone: 1, amp: 127, pitch: g2, x: 100, y: 0, rotate: 45
-tone: 2, amp: 127, pitch: c3, x: 0, y: -100, rotate: 90
-tone: 3, amp: 127, freq: 512, x: -100, y: -100, rotate: 135
-#tone: 4, amp: 127, freq: 512, x: -100, y: -100, rotate: 135+A
+tone: 0, amp: 127, pitch, 1, freq: c2, pan: 0, phase: 0
+tone: 1, amp: 127, pitch, 1, freq: g2, pan: 100, phase: 45
+tone: 2, amp: 127, pitch, 1, freq: c3, pan: 0, phase: 90
+tone: 3, amp: 127,  pitch, 0, freq: 512, pan: -100, phase: 135
+#tone: 4, amp: 127, pitch, 0, freq: 512, pan: -100, phase: 135+A
 
 # ADSR
 #adsr, Attack: 0, Delay: 10, Sustain: 50, Release: 100
@@ -11,9 +11,17 @@ tone: 3, amp: 127, freq: 512, x: -100, y: -100, rotate: 135
 # LFO
 lfo: 0, lfoA: [amp, freq] # 1*sin(10Hz) # amp*sin(freq)
 
-# Sequence
+## Sequence
 #seq: 1, seqA: [10, 127; 10,0; 10, 63; 10, 0] #[ms, 0-127; ms, 0-127.....]
 
+## Pressure sensitivity
+# pres: 0.0-1.0 
+
+## Aftertouch
+# touch: 0.0-1.0
+
+## On keypress
+# key: 0.0-1.0
 
 ##Data format sound example
 #sound.tone[0].pitch = c2
