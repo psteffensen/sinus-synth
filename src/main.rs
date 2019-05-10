@@ -24,7 +24,7 @@ pub struct App {
     pi: f64,
     sound: [[f64; 4];64],
 }
-
+/*
 enum Pitch {
     c0, cs0, df0, d0, ds0, ef0, e0, f0, fs0, gf0, g0, gs0, af0, a0, as0, bf0, b0, 
     c1, cs1, df1, d1, ds1, ef1, e1, f1, fs1, gf1, g1, gs1, af1, a1, as1, bf1, b1, 
@@ -36,7 +36,23 @@ enum Pitch {
     c7, cs7, df7, d7, ds7, ef7, e7, f7, fs7, gf7, g7, gs7, af7, a7, as7, bf7, b7, 
     c8, cs8, df8, d8, ds8, ef8, e8, f8, fs8, gf8, g8, gs8, af8, a8, as8, bf8, b8, 
 }
+*/
+#[derive(Copy, Clone, Debug)]
+struct Tone {
+            num: u16,
+            amp: f64,
+            phase: f64,
+            pan: f64,
+            pitch_mode: u8,
+            pitch: f64,
+        }
 
+#[derive(Copy, Clone, Debug)]
+struct Lfo {
+            num: u16,
+            amp: f64,
+            freq: f64,
+        }
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
@@ -75,51 +91,81 @@ impl App {
         let mut file = File::open(file_name)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        let mut tone: [[f64; 6]; 128] = [[0.0; 6]; 128];
+        //let mut tone: [[f64; 6]; 128] = [[0.0; 6]; 128];
+        let mut tone: [Tone; 2^16 - 1] = [ Tone {
+            num: 2^16 - 1,
+            amp: 0.0,
+            phase: 0.0,
+            pan: 0.0,
+            pitch_mode: 0,
+            pitch: 512.0,
+        };  2^16 - 1];
         let mut adsr: [[f64; 4]; 1];
-        let mut lfo: [f64; 2];
+        let mut lfo: [Lfo; 2^16 - 1] = [ Lfo {
+            num: 2^16 - 1,
+            amp: 0.0,
+            freq: 0.0,
+        }; 2^16 - 1];
         let mut seq: [[f64; 2]; 2048];
-
 
         for line in contents.split("\r\n") {
             let mut i  = 1 as usize;
-            if line.starts_with('#')
-            {
-                
-            }
-            else 
-            {
-                let params: Vec<&str> = line.split(|x| (x == ',') || (x == ':')).collect();
-                dbg!(&params);
-                match params[0].as_ref() {
-                    "tone" => { i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
-                                dbg!(i);
-                                tone[i][0] = i as f64;                                  // Tone number
-                                println!("i={} tone={:?}", i, tone[i][0]);
-                                tone[i][1] = params[3].trim().parse::<f64>().unwrap();  // Amplitude
-                                tone[i][2] = params[5].trim().parse::<f64>().unwrap();  // Pitch
-                                tone[i][3] = {
-                                                if tone[i][2] == 0 as f64 { 
-                                                    params[7].trim().parse::<f64>().unwrap()
-                                                }
-                                                else {
-                                                    App::pitch2freq(params[7].trim())
-                                                }
-                                            }; //Pitch, fx. "c2"
-                                tone[i][4] = params[9].trim().parse::<f64>().unwrap();  // Pan
-                                tone[i][5] = params[11].trim().parse::<f64>().unwrap();  // Phase
-                                println!("tone {} = {:?}", i, tone[i][0]);
-                                },
-                    "lfo"  => {println!("lfo {}", i)},
-                    _ => { println!("{}","Empty") }
-                }
+            let params: Vec<&str> = line.split(|x| (x == ',') || (x == ':')).collect();
+            match params[0].as_ref() {
+                "tone" => { i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
+                    tone[i].num = i as u16;                                  // Tone number
+                    tone[i].amp = params[3].trim().parse::<f64>().unwrap();  // Amplitude
+                    tone[i].phase = params[5].trim().parse::<f64>().unwrap();  // Phase
+                    tone[i].pan = params[7].trim().parse::<f64>().unwrap();  // Pan
+                    let temp: Vec<&str> = params[9].trim().split(|x| (x == ' ')).collect();
+                    // Pitch_mode and pitch
+                    match temp[0].as_ref() {
+                        "harm" => {
+                            let fraction: Vec<&str> = temp[1].split(|x| (x == '/')).collect();
+                            let numerator = fraction[0].trim().parse::<f64>().unwrap(); // f64 since we will soon devide it.
+                            let denominator = fraction[1].trim().parse::<f64>().unwrap(); // f64 since we will soon devide it.
+                            tone[i].pitch_mode = 0;
+                            tone[i].pitch = numerator/ denominator;
+
+                        },
+                        "offset"  => { 
+                            tone[i].pitch_mode = 1; 
+                            tone[i].pitch = temp[1].trim().parse::<f64>().unwrap();
+                            },
+                        "const" => { 
+                            tone[i].pitch_mode = 2; 
+                            tone[i].pitch = temp[1].trim().parse::<f64>().unwrap();
+                        },
+                        _ => { println!("Tone:Pitch Empty (line {})", i); 
+                        },
+                    }
+                },
+                "lfo"  => { 
+                    i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
+                    lfo[i].num = i as u16;                                  // LFO number
+                    lfo[i].amp = params[3].trim().parse::<f64>().unwrap();  // Amplitude
+                    lfo[i].freq = params[5].trim().parse::<f64>().unwrap();  // Frequency
+                },
+                "connect" => {
+                    i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
+                    let connect[i].from = 
+                },
+                "#" => { println!("{}","#") },
+                _ => {}, //{ println!("{}","Empty") }
             }
         }
         Ok(contents)
     }   
     
     // https://en.wikipedia.org/wiki/Piano_key_frequencies
-    fn pitch2freq(pitch: &str) -> f64 {
+    // 2^(1/12)^(D2-58)*440
+    fn pitch2freqFormula(pitch: u32) -> f64 {
+        ((2.0_f64.powf(1.0/12.0)).powf(pitch as f64-58.0)) * 440.0
+
+    }
+    /*
+    fn pitch2freq(pitch: Pitch) -> f64 {
+        
         match pitch {
             Pitch::c0 => 16.35160,
             Pitch::cs0 => 17.32391,
@@ -277,6 +323,7 @@ impl App {
             _ => 440.0,
         }
     }
+    */
 
     fn save_sound(&self, file_name: &str) -> std::io::Result<()> {
         let mut file = File::create(file_name)?;
