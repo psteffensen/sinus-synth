@@ -55,7 +55,8 @@ lfo: 0, amp: 0.5, freq: 10
 
 # Connect
 # -------
-# connect: num, from: [lfo: num], to: [tone: num]
+# connect: num, from: var, to: var
+# example -> # connect: 0, from: lfo[0], to: tone[1].pan
 
 
 # No.  	 Harmonic  	        Interval  	    Footage     Color 

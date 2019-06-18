@@ -11,7 +11,8 @@ use piston::input::*;
 use piston::window::WindowSettings;
 use graphics::*;
 use std::fs::File;  // for opening and saving file
-use std::io::prelude::*; // for opening and saving file 
+use std::io::prelude::*; // for opening and saving file
+use std::mem; // Used to get size of usize
 
 const WHITE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 const BLACK: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
@@ -39,7 +40,7 @@ enum Pitch {
 */
 #[derive(Copy, Clone, Debug)]
 struct Tone {
-            num: u16,
+            num: usize,
             amp: f64,
             phase: f64,
             pan: f64,
@@ -49,10 +50,18 @@ struct Tone {
 
 #[derive(Copy, Clone, Debug)]
 struct Lfo {
-            num: u16,
+            num: usize,
             amp: f64,
             freq: f64,
         }
+
+#[derive(Clone, Debug)]
+struct Connect {
+            num: usize,
+            from: String,
+            to: String,
+        }
+
 
 impl App {
     fn render(&mut self, args: &RenderArgs) {
@@ -88,18 +97,19 @@ impl App {
     }
 
     fn open_sound(file_name: &str) -> std::io::Result<(String)> { 
+        let size_usize: usize = mem::size_of::<usize>();
+        dbg!(mem::size_of::<usize>());
         let mut file = File::open(file_name)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
-        //let mut tone: [[f64; 6]; 128] = [[0.0; 6]; 128];
-        let mut tone: [Tone; 2^16 - 1] = [ Tone {
+        let mut tone: [Tone; 1000] = [ Tone {
             num: 2^16 - 1,
             amp: 0.0,
             phase: 0.0,
             pan: 0.0,
             pitch_mode: 0,
             pitch: 512.0,
-        };  2^16 - 1];
+        };  1000];
         let mut adsr: [[f64; 4]; 1];
         let mut lfo: [Lfo; 2^16 - 1] = [ Lfo {
             num: 2^16 - 1,
@@ -113,7 +123,7 @@ impl App {
             let params: Vec<&str> = line.split(|x| (x == ',') || (x == ':')).collect();
             match params[0].as_ref() {
                 "tone" => { i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
-                    tone[i].num = i as u16;                                  // Tone number
+                    tone[i].num = i as usize;                                  // Tone number
                     tone[i].amp = params[3].trim().parse::<f64>().unwrap();  // Amplitude
                     tone[i].phase = params[5].trim().parse::<f64>().unwrap();  // Phase
                     tone[i].pan = params[7].trim().parse::<f64>().unwrap();  // Pan
@@ -142,13 +152,13 @@ impl App {
                 },
                 "lfo"  => { 
                     i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
-                    lfo[i].num = i as u16;                                  // LFO number
+                    lfo[i].num = i as usize;                                  // LFO number
                     lfo[i].amp = params[3].trim().parse::<f64>().unwrap();  // Amplitude
                     lfo[i].freq = params[5].trim().parse::<f64>().unwrap();  // Frequency
                 },
                 "connect" => {
                     i = params[1].trim().parse::<usize>().unwrap(); // number. Trim takes away white spaces, parse parses to f64 and unwrap unwraps from Ok(1) to 1
-                    let connect[i].from = 
+                    // let connect[i].from = 
                 },
                 "#" => { println!("{}","#") },
                 _ => {}, //{ println!("{}","Empty") }
